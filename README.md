@@ -7,23 +7,25 @@ Hugging Face 모델 seoseo99/qwen2-1_5b-sum_lk_gemini(Qwen2-1.5B-Instruct 미세
 
 ---
 
-주요 기능
-	•	요약 모델: Qwen2-1.5B-Instruct 미세조정(finetuned)
-	•	환각 억제:
-	  -	“복사 편향(Copy bias)” 로짓 프로세서 – 원문에 나온 토큰/조사/구두점을 우대
-	  -	3문장 강제(EOS 금지 + 문장 수 기준 정지)
-	  -	추출식 폴백 – 이상 출력 시 원문에서 문장 3개를 보수적으로 발췌
-	•	실시간 워커: places/*/reviews/* 를 구독 → 장소별 10개가 모이면 합쳐 요약 → places/{placeId}/meta/summary 저장 + 각 리뷰 summaryProcessed=True
-	•	CPU 기본 동작: 도커/로컬 모두 GPU 없이 실행 가능
+## 주요 기능
+- 요약 모델: **Qwen2-1.5B-Instruct** 미세조정(finetuned)
+- 환각 억제
+  - **복사 편향(CopyBias)** 로짓 프로세서 → 원문에 나온 토큰/조사/구두점 우대
+  - **3문장 강제**(EOS 금지 + 문장 수 기준 정지)
+  - **추출식 폴백** → 이상 출력 시 원문에서 문장 3개 보수적 발췌
+- 실시간 워커: `places/*/reviews/*` 구독 → 장소별 10개 모이면 합쳐 요약  
+  → `places/{placeId}/meta/summary` 저장 + 각 리뷰 `summaryProcessed=True`
+- CPU 기본 동작: 도커/로컬 모두 GPU 없이 실행 가능
 ---
 
 ## 구조
+```text
 ├─ Dockerfile                # 요약 워커 컨테이너
 ├─ docker-compose.yml        # summarizer 서비스 정의
 ├─ requirements.txt          # 파이썬 의존성
 ├─ realtime_summarizer.py    # Firestore 워커 + 요약 로직
 ├─ cpu_qwen2.py              # (옵션) 모델 단독 실행 예제
-├─ *.ipynb                   # 학습/실험 노트북 (LoRA 등)
+├─ *.ipynb                   # 학습/실험 노트북(LoRA 등)
 └─ .dockerignore / .gitignore
 
 
