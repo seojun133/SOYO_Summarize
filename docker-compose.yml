@@ -1,0 +1,11 @@
+services:
+  summarizer:
+    build: .
+    image: soyo-summarizer:latest
+    volumes:
+      - ./firebase.json:/app/firebase.json:ro
+      - soyo_hf_cache:/root/.cache/huggingface
+    restart: unless-stopped
+
+volumes:
+  soyo_hf_cache:
