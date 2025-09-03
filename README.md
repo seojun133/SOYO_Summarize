@@ -1,10 +1,11 @@
-SOYO_Summarize · Summarize Model (Korean Reviews)
+# SOYO_Summarize · Summarize Model (Korean Reviews)
 
 여행/행사 후기 요약 파이프라인.
 Hugging Face 모델 seoseo99/qwen2-1_5b-sum_lk_gemini(Qwen2-1.5B-Instruct 미세조정)를 기반으로, Firestore에 쌓이는 리뷰를 10개 단위로 모아 1–3문장 요약을 생성하고 DB에 저장합니다. Docker로 한 줄 배포/실행.
 
-모델 카드: https://huggingface.co/seoseo99/qwen2-1_5b-sum_lk_gemini
+- 모델 카드: https://huggingface.co/seoseo99/qwen2-1_5b-sum_lk_gemini
 
+---
 
 주요 기능
 	•	요약 모델: Qwen2-1.5B-Instruct 미세조정(finetuned)
@@ -14,9 +15,9 @@ Hugging Face 모델 seoseo99/qwen2-1_5b-sum_lk_gemini(Qwen2-1.5B-Instruct 미세
 	  -	추출식 폴백 – 이상 출력 시 원문에서 문장 3개를 보수적으로 발췌
 	•	실시간 워커: places/*/reviews/* 를 구독 → 장소별 10개가 모이면 합쳐 요약 → places/{placeId}/meta/summary 저장 + 각 리뷰 summaryProcessed=True
 	•	CPU 기본 동작: 도커/로컬 모두 GPU 없이 실행 가능
+---
 
-
-구조
+## 구조
 ├─ Dockerfile                # 요약 워커 컨테이너
 ├─ docker-compose.yml        # summarizer 서비스 정의
 ├─ requirements.txt          # 파이썬 의존성
@@ -26,41 +27,48 @@ Hugging Face 모델 seoseo99/qwen2-1_5b-sum_lk_gemini(Qwen2-1.5B-Instruct 미세
 └─ .dockerignore / .gitignore
 
 
-파이프라인 개요
-	1.	수집: Firestore places/{placeId}/reviews/{reviewId} 에 리뷰 문서가 들어옴
-	2.	버퍼링: 장소별로 신규 리뷰를 버퍼에 쌓아 10개가 되면 합침(최대 4,000자)
-	3.	요약 생성:
-	•	프롬프트에서 제목/지역 출력 금지, 원문 어휘 위주 사용
-	•	CopyBias 로 원문 토큰/기능 토큰(e.g., 조사, 구두점) 가중치 ↑, 그 외 ↓
-	•	3문장 강제: EOS 토큰을 3문장 전까지 금지 + 3문장 달성 시 정지
-	•	후처리/검증: 개행/일본식 구두점 정리, 환각 의심 시 추출식 폴백
-	4.	저장: places/{placeId}/meta/summary 에 아래 페이로드 저장
-{
-  "text": "<요약문>",
-  "model": "seoseo99/qwen2-1_5b-sum_lk_gemini",
-  "reviewCount": 10,
-  "batchSize": 10,
-  "updatedAt": <server timestamp>,
-  "title": "<옵션: 장소명>",
-  "region": "<옵션: 지역>",
-  "sourceReviewIds": ["..."]
-}
+---
+
+## 파이프라인 개요
+
+1) **수집**: Firestore `places/{placeId}/reviews/{reviewId}` 에 리뷰 문서가 들어옴  
+2) **버퍼링**: 장소별로 신규 리뷰를 버퍼에 쌓아 **10개**가 되면 합치기(최대 4,000자)  
+3) **요약 생성**:
+   - 프롬프트에서 제목/지역 출력 금지, **원문 어휘 위주** 사용
+   - CopyBias 로 원문 토큰/기능 토큰(조사, 구두점) 가중치 ↑, 그 외 ↓  
+   - **3문장 강제**: EOS 금지 + 문장 수 스톱핑
+4) **저장**: 합친 원문을 1–3문장으로 생성하여 아래 페이로드로 저장  
+   경로: `places/{placeId}/meta/summary`
+   ```json
+   {
+     "text": "<요약문>",
+     "model": "seoseo99/qwen2-1_5b-sum_lk_gemini",
+     "reviewCount": 10,
+     "batchSize": 10,
+     "updatedAt": "<server timestamp>",
+     "title": "<옵션: 장소명>",
+     "region": "<옵션: 지역>",
+     "sourceReviewIds": ["..."]
+   }
 
 
-모델 요약 방법
-	•	빔서치(decoding): do_sample=False, num_beams=5 → 샘플링 없이 가장 확률 높은 문장 흐름 선택(재현성 높음)
-	•	복사 편향(CopyBias): 원문에서 본 토큰들에 로짓 가산(+bias), 그 외엔 감산(-bias) → 원문 바깥 단어 생성 억제
-	•	3문장 제어: EOS 금지 프로세서 + 문장 수 스토핑 기준 → 정확히 3문장에 멈춤
-	•	폴백: 이상 출력 시 원문 문장 3개 추출로 안전하게 대체
+## 모델 요약 방법
+- **빔서치(decoding)**: `do_sample=False`, `num_beams=5` → 샘플링 없이 **가장 확률 높은 문장 경로** 선택(재현성 높음)
+- **복사 편향(CopyBias)**: 원문에서 본 토큰들에 **로짓 가산(+bias)**, 그 외엔 **감산(-bias)** → 원문 바깥 단어 생성 억제
+- **3문장 제어**: EOS 금지 프로세서 + 문장 수 스토핑 기준 → **정확히 3문장**에서 멈춤
+- **폴백**: 이상 출력 시 **원문 문장 3개 추출**로 안전 대체
 
-로컬 실행
+---
+
+## 로컬 실행
+```bash
 # 가상환경 준비
 pip install -r requirements.txt
+
 # Firestore 실서버 사용
 python realtime_summarizer.py --batch-size 10 --write --project <PROJECT_ID>
 
 
-Docker로 실행
 # 1) 이미지 빌드
 docker compose build summarizer
 # 2) 백그라운드 실행
