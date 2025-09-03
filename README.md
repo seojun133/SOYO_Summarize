@@ -27,7 +27,7 @@ Hugging Face 모델 seoseo99/qwen2-1_5b-sum_lk_gemini(Qwen2-1.5B-Instruct 미세
 ├─ cpu_qwen2.py              # (옵션) 모델 단독 실행 예제
 ├─ *.ipynb                   # 학습/실험 노트북(LoRA 등)
 └─ .dockerignore / .gitignore
-
+```
 
 ---
 
@@ -52,7 +52,7 @@ Hugging Face 모델 seoseo99/qwen2-1_5b-sum_lk_gemini(Qwen2-1.5B-Instruct 미세
      "region": "<옵션: 지역>",
      "sourceReviewIds": ["..."]
    }
-```
+
 
 ## 모델 요약 방법
 - **빔서치(decoding)**: `do_sample=False`, `num_beams=5` → 샘플링 없이 **가장 확률 높은 문장 경로** 선택(재현성 높음)
