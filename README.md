@@ -68,6 +68,7 @@ pip install -r requirements.txt
 # Firestore 실서버 사용
 python realtime_summarizer.py --batch-size 10 --write --project <PROJECT_ID>
 
+## 도커로 실행
 
 # 1) 이미지 빌드
 docker compose build summarizer
