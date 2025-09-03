@@ -52,7 +52,7 @@ Hugging Face 모델 seoseo99/qwen2-1_5b-sum_lk_gemini(Qwen2-1.5B-Instruct 미세
      "region": "<옵션: 지역>",
      "sourceReviewIds": ["..."]
    }
-
+```
 
 ## 모델 요약 방법
 - **빔서치(decoding)**: `do_sample=False`, `num_beams=5` → 샘플링 없이 **가장 확률 높은 문장 경로** 선택(재현성 높음)
@@ -69,7 +69,7 @@ pip install -r requirements.txt
 
 # Firestore 실서버 사용
 python realtime_summarizer.py --batch-size 10 --write --project <PROJECT_ID>
-
+```
 
 ## 도커로 실행
 ```bash
@@ -82,4 +82,4 @@ docker compose logs -f summarizer
 # 4) 중지 / 정리
 docker compose stop summarizer
 docker compose rm -f summarizer  # 컨테이너 제거(이미지는 보존)
-
+```
