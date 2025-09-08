@@ -21,4 +21,4 @@ RUN pip install --upgrade pip setuptools wheel && \
     pip install -r /app/requirements.txt
 
 ENTRYPOINT ["/usr/bin/tini","--"]
-CMD ["python","-u","/app/realtime_summarizer.py","--batch-size","10","--write"]
+CMD ["python","-u","/app/realtime_summarizer.py","--batch-size","1","--write"]
