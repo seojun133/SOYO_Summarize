@@ -3,3 +3,9 @@ google-cloud-firestore==2.16.0
 transformers==4.43.3
 sentencepiece==0.2.0
 protobuf>=3.20.3,<6
+
+# 빌드 docker compose build
+# 백그라운드 실행 docker compose up -d
+# 실시간 로그 docker compose logs -f
+# 서비스만 중지(컨테이너는 남음) docker compose stop
+# 컨테이너/네트워크만 제거 docker compose down
