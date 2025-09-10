@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  summarizer-worker:
+    build: .
+    image: soyo/review-summary-worker:ko
+    restart: unless-stopped
+    environment:
+      FIREBASE_CRED_PATH: /run/secrets/firebase.json
+      SUMMARIZER_PATH: /app/t5_summarize.py
+      API_DATA_LANG: ko
+      MIN_BUFFER_SIZE: 5
+      CLEANUP_INTERVAL_SEC: 3600
+      DELETE_OLDER_THAN_DAYS: 180
+    volumes:
+      - ./firebase.json:/run/secrets/firebase.json:ro
+      - ./cache:/cache

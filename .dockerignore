@@ -1,0 +1,23 @@
+.git
+.gitignore
+
+# python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# envs
+.venv/
+venv/
+.env
+
+# caches & junk
+.cache/
+cache/
+.DS_Store
+*.ipynb
+
+# secrets (이미지에 포함 금지, 실행 시 마운트)
+firebase.json
